@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="Description" content="self test.">
+<meta name="theme-color" content="black"/>
+<link  rel="manifest" href="manifest.json">
+<link href="img/logo.png" rel="icon" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#da532c">
+<meta name="theme-color" content="#ffffff">
+<script>
+    if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); 
+} 
+</script>
+
+<!-- CSS only -->
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" 
+    integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" 
+    crossorigin="anonymous">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+    integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+    crossorigin=""/>
+
+    <title>COVID-19 SELF TEST</title> 
+<!-- JS, Popper.js, and jQuery -->
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+   integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+   crossorigin=""></script>
+<script src="http://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script>  
+
+<!--Style-->
+    <style>
+    .previous-tab,
+    .next-tab{
+	display: inline-block;
+	border: 1px solid #444348;
+	border-radius: 3px;
+	margin: 5px;
+	color: #444348;
+	font-size: 14px;
+	padding: 10px 15px;
+	cursor: pointer;
+}
+    @media only screen and (min-device-width : 320px) and (max-device-width : 480px) {
+    .lefter{ margin-left:33% !important;}
+}
+    #stopwatch {
+    background: #eee;
+    display: block;
+    border: 1px solid #999;
+    padding: 20px;
+    margin-left: auto;
+    margin-right: auto;
+    border-radius: 10px;
+    max-width: 250px;
+}
+    #sw-time {
+    font-size: 48px;
+    font-weight: bold;
+    text-align: center;
+}
+    #sw-rst, #sw-go {
+    width: 45%;
+    box-sizing: padding-box;
+    padding: 10px;
+    display: inline-block;
+    background: #aa2f2f;
+    border: 0;
+    color: #fff;
+}
+html, body, #map{
+    height: 100%;
+    width: 100%;
+}
+.leaflet-div-icon {
+    background: none!important;
+    border: none!important;
+}
+/* Styles */
+</style>
+</head>
+
+<!--load the modal-->
+<body onload="language()" class="modal-open" style="padding-right:16px;">
+    <form method="post" action="#"  id="form1" >
+
+<!-- change the language-->
+
+<!--main page description-->
+    <div class="container-md ">      
+        <div class="d-flex justify-content-center  mt-2"> 
+            <div class="row">
+                <div class="col-md-5 "><img src="img/logo.png" class="img-fluid float-sm-right mt-3 lefter " alt=""/></div>
+                <div class="col-md-7 "><h1 class="text-left">COVID-19 SELF TEST</h1></div>
+            </div>
+        </div>
+        <span id="clicks" class="invisible"></span>
+        <span id=""></span>
+<!-- Nav tabs -->
+<ul class="nav nav-tabs " id="myTab" role="tablist" style="display:none">
+    <li class="nav-item invisible">
+    <a class="nav-link active" id="home-tab" data-toggle="tab" href="#home" role="tab" aria-controls="home" aria-selected="true">Home</a>
+    </li>
+    <li class="nav-item invisible">
+    <a class="nav-link" id="profile-tab" data-toggle="tab" href="#profile" role="tab" aria-controls="profile" aria-selected="false">Profile</a>
+    </li>
+    <li class="nav-item invisible">
+    <a class="nav-link" id="messages-tab" data-toggle="tab" href="#messages" role="tab" aria-controls="messages" aria-selected="false">Messages</a>
+    </li>
+    <li class="nav-item invisible">
+    <a class="nav-link" id="settings-tab" data-toggle="tab" href="#settings" role="tab" aria-controls="settings" aria-selected="false">Settings</a>
+    </li>
+    <li class="nav-item invisible">
+    <a class="nav-link" id="bodypains-tab" data-toggle="tab" href="#bodypains" role="tab" aria-controls="bodypains" aria-selected="false">bodypains-tab</a>
+    </li>
+    <li class="nav-item invisible">
+    <a class="nav-link" id="headache-tab" data-toggle="tab" href="#headache" role="tab" aria-controls="headache" aria-selected="false">headache-tab</a>
+    </li>
+    <li class="nav-item invisible">
+    <a class="nav-link" id="fever-tab" data-toggle="tab" href="#fever" role="tab" aria-controls="fever" aria-selected="false">bfever-tab</a>
+    </li>
+    <li class="nav-item invisible">
+    <a class="nav-link" id="breathing-tab" data-toggle="tab" href="#breathing" role="tab" aria-controls="breathing" aria-selected="false">breathing-tab</a>
+    </li>
+    <li class="nav-item invisible">
+    <a class="nav-link" id="fatigue-tab" data-toggle="tab" href="#fatigue" role="tab" aria-controls="fatigue" aria-selected="false">fatigue-tab</a>
+    </li>
+    <li class="nav-item invisible">
+    <a class="nav-link" id="timer-tab" data-toggle="tab" href="#timer" role="tab" aria-controls="fatigue" aria-selected="false">timer-tab</a>
+    </li>
+    <li class="nav-item invisible">
+    <a class="nav-link" id="traveled-tab" data-toggle="tab" href="#traveled" role="tab" aria-controls="traveled" aria-selected="false">traveled-tab</a>
+    </li>
+    <li class="nav-item invisible">
+    <a class="nav-link" id="infected-tab" data-toggle="tab" href="#infected" role="tab" aria-controls="infected" aria-selected="false">infected-tab</a>
+    </li>
+    <li class="nav-item invisible">
+    <a class="nav-link" id="directContact-tab" data-toggle="tab" href="#sick" role="tab" aria-controls="sick" aria-selected="false">directContact-tab</a>
+    </li>
+    <li class="nav-item invisible">
+    <a class="nav-link" id="vaccine-tab" data-toggle="tab" href="#vaccine" role="tab" aria-controls="vaccine" aria-selected="false">vaccine-tab</a>
+    </li>
+    <li class="nav-item invisible">
+    <a class="nav-link" id="diagnosis-tab" data-toggle="tab" href="#diagnosis" role="tab" aria-controls="diagnosis" aria-selected="false">diagnosis-tab</a>
+    </li>
+</ul>
+
+<!-- Tab panes -->
+<div class="tab-content">
+    <!--cough card -->
+    <div class="tab-pane active" id="home" role="tabpanel" aria-labelledby="home-tab">
+        <div class="d-flex justify-content-center m-3">
+            <div class=" card shadow shadow-sm">
+                <div class="card-body ">
+                    <img src="img/c2.png" class="d-block mx-auto img-fluid" alt=""/>
+                    <h2 class="mb-5 text-center">Avez-vous toussé?</h2>
+                        <div class="input-group mb-3">
+                        <input type="button"   value="OUI" class=" nexttab btn btn-primary btn-lg form-control form-control-lg"  onclick="onClick(),sym('cough','yes')"/>	
+                        </div>
+                        <div class="input-group mb-3">
+                        <input type="button"   value="NON" class=" nexttab btn btn-primary btn-lg form-control form-control-lg" onclick="noClick(),sym('cough','no')" />	
+                        </div>
+                </div>
+            </div>
+        </div> 
+            <input type="button" value="&laquo next" class="nexttab btn btn-danger invisible" />
+            <input type="button" value="Prev &raquo" class="prevtab btn btn-primary invisible" />
+    </div>  
+<!--cold card-->
+    <div class="tab-pane" id="profile" role="tabpanel" aria-labelledby="profile-tab">
+        <div class="d-flex justify-content-center m-3">
+            <div class=" card shadow shadow-sm">
+                <div class="card-body">
+                    <img src="img/coldd.png" class="d-block mx-auto img-fluid" />
+                    <h2 class="mb-5 text-center">As-tu un rhume?</h2>
+                    <div class="input-group mb-3">
+                        <input type="button"  value="OUI" class="  nexttab btn btn-primary btn-lg form-control form-control-lg"  onclick="onClick(), sym('cold','yes')" />	
+						</div>
+                        <div class="input-group mb-3">
+                        <input type="button"   value="NON" class=" nexttab btn btn-primary btn-lg form-control form-control-lg" onclick="noClick(), sym('cold','no') "/>	
+						</div>
+                </div>
+            </div>
+        </div>
+            <input type="button" value="&laquo Prev" class="prevtab btn btn-primary invisible" /> 
+            <input type="button" value="Next &raquo" class="nexttab btn btn-danger invisible" />
+    </div>
+    <!--Diarrhea card-->
+    <div class="tab-pane" id="messages" role="tabpanel" aria-labelledby="messages-tab">
+        <div class="d-flex justify-content-center m-3">
+            <div class=" card shadow shadow-sm">
+                <div class="card-body">
+                    <img src="img/icons8-diarrhea-100.png" class=" d-block mx-auto img-fluid" alt=""/>
+                    <h2 class="mb-4 text-center">Souffrez-vous de <br />diarrhée?</h2>
+                    <div class="input-group mb-3">
+                    <input type="button" value="OUI"  class=" nexttab btn btn-primary btn-lg form-control form-control-lg"  onclick="onClick(), sym('diarrhea','yes')" />	
+                    </div>
+                    <div class="input-group mb-3">
+                    <input type="button"  value="NON"  class="nexttab btn btn-primary btn-lg form-control form-control-lg" onclick="noClick(), sym('diarrhea','no')" />	
+                    </div>
+                </div>
+            </div>
+        </div>
+        <input type="button" value="&laquo Prev" class="prevtab btn btn-primary invisible" /> 
+        <input type="button" value="Next &raquo" class="nexttab btn btn-danger invisible" />
+    </div>
+    <!--sorethroat card -->
+    <div class="tab-pane" id="settings" role="tabpanel" aria-labelledby="settings-tab">
+        <div class="d-flex justify-content-center m-3">
+            <div class=" card shadow shadow-sm">
+                <div class="card-body">
+                    <img src="img/sorethroat.png" class=" d-block mx-auto img-fluid" alt=""/>
+                    <h2 class="mb-4 text-center">Avez-vous des <br />maux de gorge ?</h2>
+                    <div class="input-group mb-3">
+                    <input type="button"  value="OUI" class=" nexttab btn btn-primary btn-lg form-control form-control-lg" onclick="onClick(), sym('sorethroat','yes')" />	
+                    </div>
+                    <div class="input-group mb-3">
+                    <input type="button"  value="NON" class="nexttab btn btn-primary btn-lg form-control form-control-lg" onclick="noClick(), sym('sorethroat','no')" />	
+                    </div>
+                </div>
+            </div>
+        </div>
+        <input type="button" value="&laquo Prev" class="prevtab btn btn-primary invisible" /> 
+        <input type="button" value="Next &raquo" class="nexttab btn btn-danger invisible" />
+    </div>
+    <!--body aches card -->
+    <div class="tab-pane" id="bodypains" role="tabpanel" aria-labelledby="bodypains-tab">
+        <div class="d-flex justify-content-center m-3">
+            <div class=" card shadow shadow-sm">
+                <div class="card-body">
+                    <img src="img/pain1.png" class=" d-block mx-auto img-fluid" alt=""/>
+                    <h2 class="mb-4 text-center">Avez-vous des douleurs <br />corporelles?</h2>
+                    <div class="input-group mb-3">
+                    <input type="button"  value="OUI" class=" nexttab btn btn-primary btn-lg form-control form-control-lg" onclick="onClick(), sym('bodypain','yes')" />	
+                    </div>
+                    <div class="input-group mb-3">
+                    <input type="button"  value="NON" class="nexttab btn btn-primary btn-lg form-control form-control-lg"  onclick="noClick(), sym('bodypain','no')"/>	
+                    </div>
+                </div>
+            </div>
+        </div>
+        <input type="button" value="&laquo Prev" class="prevtab btn btn-primary invisible" /> 
+        <input type="button" value="Next &raquo" class="nexttab btn btn-danger invisible" />
+    </div>
+    <!--headache card-->
+    <div class="tab-pane" id="headache" role="tabpanel" aria-labelledby="headache-tab">
+        <div class="d-flex justify-content-center m-3">
+            <div class=" card shadow shadow-sm">
+                <div class="card-body">
+                    <img src="img/headache.png" class=" d-block mx-auto img-fluid" alt=""/>
+                    <h2 class="mb-4 text-center">Avez-vous un mal <br />de tête ?</h2>
+                    <div class="input-group mb-3">
+                    <input type="button"  value="OUI" class=" nexttab btn btn-primary btn-lg form-control form-control-lg" onclick="onClick(), sym('headache','yes')" />	
+                    </div>
+                    <div class="input-group mb-3">
+                    <input type="button"  value="NON" class="nexttab btn btn-primary btn-lg form-control form-control-lg" onclick="noClick(), sym('headache','no')" />	
+                    </div>
+                </div>
+            </div>
+        </div>
+        <input type="button" value="&laquo Prev" class="prevtab btn btn-primary invisible" /> 
+        <input type="button" value="Next &raquo" class="nexttab btn btn-danger invisible" />
+    </div>
+    <!--fever card-->
+    <div class="tab-pane" id="fever" role="tabpanel" aria-labelledby="fever-tab">
+        <div class="d-flex justify-content-center m-3">
+            <div class=" card shadow shadow-sm">
+                <div class="card-body">
+                    <img src="img/fever.png" alt="" class=" d-block mx-auto img-fluid" alt=""/>
+                    <h2 class="mb-4 text-center">Avez-vous de la fièvre<br />(température 37,8 ° C <br />et plus)?</h2>
+                    <div class="input-group mb-3">
+                    <input type="button"  value="OUI" class=" nexttab btn btn-primary btn-lg form-control form-control-lg" onclick="onClick(), sym('fever','yes')" />	
+                    </div>
+                    <div class="input-group mb-3">
+                    <input type="button"  value="NON" class=" nexttab btn btn-primary btn-lg form-control form-control-lg" onclick="noClick(), sym('fever','no')" />	
+                    </div>
+                </div>
+            </div>
+        </div>
+        <input type="button" value="&laquo Prev" class="prevtab btn btn-primary invisible" /> 
+        <input type="button" value="Next &raquo" class="nexttab btn btn-danger invisible" />
+    </div>
+    <!--breathing card-->
+    <div class="tab-pane" id="breathing" role="tabpanel" aria-labelledby="breathing-tab">
+        <div class="d-flex justify-content-center m-3">
+            <div class=" card shadow shadow-sm">
+                <div class="card-body">
+                    <img src="img/breathe.png" class=" d-block mx-auto img-fluid"alt="" />
+                    <h2 class="mb-4 text-center">Avez-vous de la difficulté à<br /> respirer?</h2>
+                    <div class="input-group mb-3">
+                    <input type="button" value="OUI" class=" nexttab btn btn-primary btn-lg form-control form-control-lg" onclick="onClickdouble(), sym('breathing','yes')" />	
+                    </div>
+                    <div class="input-group mb-3">
+                    <input type="button" value="NON" class="nexttab btn btn-primary btn-lg form-control form-control-lg" onclick="noClick(), sym('breathing','no')" />	
+                    </div>
+                </div>
+            </div>
+        </div>
+        <input type="button" value="&laquo Prev" class="prevtab btn btn-primary invisible" /> 
+        <input type="button" value="Next &raquo" class="nexttab btn btn-danger invisible" />
+    </div>
+    <!--fatigue card-->
+    <div class="tab-pane" id="fatigue" role="tabpanel" aria-labelledby="fatigue-tab">
+        <div class="d-flex justify-content-center m-3">
+            <div class=" card shadow shadow-sm">
+                <div class="card-body">
+                    <img src="img/fatigue.jpg" class=" d-block mx-auto img-fluid" alt="" />
+                    <h2 class="mb-4 text-center">Éprouvez-vous <br />de la fatigue ?</h2>
+                    <div class="input-group mb-3">
+                    <input type="button"  value="OUI" class=" nexttab btn btn-primary btn-lg form-control form-control-lg" onclick="onClickdouble(), sym('fatigue','yes')" />	
+                    </div>
+                    <div class="input-group mb-3">
+                    <input type="button"  value="NON" class=" nexttab btn btn-primary btn-lg form-control form-control-lg" onclick="noClick(), sym('fatigue','no')" />	
+                    </div>
+                </div>
+            </div>
+        </div>
+        <input type="button" value="&laquo Prev" class="prevtab btn btn-primary invisible" /> 
+        <input type="button" value="Next &raquo" class="nexttab btn btn-danger invisible" />
+    </div>
+    <!--timer-->
+    <div class="tab-pane" id="timer" role="tabpanel" aria-labelledby="timer-tab">
+        <div class="d-flex justify-content-center m-3">
+            <div class=" card shadow shadow-sm">
+                <div class="card-body">
+                    <h2 class="mb-4 text-center">Démarrez le chronomètre et <br /> retenez votre souffle pendant <br /> 10 secondes si possible?</h2>
+                    <div id="stopwatch">
+                    <!-- [DISPLAY TIMER] -->
+                    <div id="sw-time">00:00:00</div>
+                    <!-- [RESET BUTTON] -->
+                    <input type="button" value="Réinitialiser" id="sw-rst" disabled/>
+                    <!-- [START/STOP BUTTON] -->
+                    <input type="button" value="Démarrer" id="sw-go" disabled/>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <input type="button" value="&laquo " class="prevtab btn btn-primary " /> 
+        <input type="button" value=" &raquo" class="nexttab btn btn-danger " />
+    </div>
+    <!--Smell/Taste-->
+    <div class="tab-pane" id="traveled" role="tabpanel" aria-labelledby="traveled-tab">
+        <div class="d-flex justify-content-center m-3">
+            <div class=" card shadow shadow-sm">
+                <div class="card-body">
+                    <img src="img/14days2.png" class=" d-block mx-auto img-fluid" alt=""/>
+                    <h2 class="mb-4 text-center">Avez-vous perdu <br /> récemment l'odeur <br /> ou le goût?</h2>
+                    <div class="input-group mb-3">
+                    <input type="button"  value="OUI" class=" nexttab btn btn-primary btn-lg form-control form-control-lg" onclick="onClicktriple(), sym('smellTaste','yes')" />	
+                    </div>
+                    <div class="input-group mb-3">
+                    <input type="button"  value="NON" class="nexttab btn btn-primary btn-lg form-control form-control-lg" onclick="noClick(), sym('smellTaste','no')" />	
+                    </div>
+                </div>
+            </div>
+        </div>
+        <input type="button" value="&laquo Prev" class="prevtab btn btn-primary invisible" /> 
+        <input type="button" value="Next &raquo" class="nexttab btn btn-danger invisible" />
+    </div>
+    <!--traveling infected area card-->
+    <div class="tab-pane" id="infected" role="tabpanel" aria-labelledby="infected-tab">
+        <div class="d-flex justify-content-center m-3">
+            <div class=" card shadow shadow-sm">
+                <div class="card-body">
+                    <img src="img/history_infected.png" class=" d-block mx-auto img-fluid" alt=""/>
+                    <h2 class="mb-4 text-center">Avez-vous voyagé <br />récemment au cours des <br />14 derniers jours?</h2>
+                    <div class="input-group mb-3">
+                    <input type="button"  value="OUI" class=" nexttab btn btn-primary btn-lg form-control form-control-lg" onclick="onClicktriple(), sym('infectedArea','yes')" />	
+                    </div>
+                    <div class="input-group mb-3">
+                    <input type="button"  value="NON" class="nexttab btn btn-primary btn-lg form-control form-control-lg" onclick="noClick(), sym('infectedArea','no')" />	
+                    </div>
+                </div>
+            </div>
+        </div>
+        <input type="button" value="&laquo Prev" class="prevtab btn btn-primary invisible" /> 
+        <input type="button" value="Next &raquo" class="nexttab btn btn-danger invisible" />
+    </div>
+    <!--direct contact card-->
+    <div class="tab-pane" id="directContact" role="tabpanel" aria-labelledby="directContact-tab">
+        <div class="d-flex justify-content-center m-3">
+            <div class=" card shadow shadow-sm">
+                <div class="card-body">
+                    <img src="img/doctor.png" class=" d-block mx-auto img-fluid" alt=""/>
+                    <h2 class="mb-4 text-center">Avez-vous un contact direct<br /> avec ou prenez-vous soin d'un<br /> PATIENT COVID-19 positif?</h2>
+                    <div class="input-group mb-3">
+                    <input type="button"  value="OUI" class=" nexttab btn btn-primary btn-lg form-control form-control-lg" onclick="onClicktriple(), sym('directContact','yes')" />	
+                    </div>
+                    <div class="input-group mb-3">
+                    <input type="button"  value="NON" class="nexttab btn btn-primary btn-lg form-control form-control-lg" onclick="noClick(), sym('directContact','no')" />	
+                    </div>
+                </div>
+            </div>
+        </div>
+        <input type="button" value="&laquo Prev" class="prevtab btn btn-primary invisible" /> 
+        <input type="button" value="Next &raquo" class="nexttab btn btn-danger invisible" />
+    </div>
+    <!--Vaccine card-->
+    <div class="tab-pane" id="vaccine" role="tabpanel" aria-labelledby="vaccine-tab">
+        <div class="d-flex justify-content-center m-3">
+            <div class=" card shadow shadow-sm">
+                <div class="card-body">
+                    <h2 class="mb-4 text-center">Voulez-vous vous faire vacciner <br> si Oui, veuillez entrer votre numéro de téléphone</h2>
+                    <div class="input-group mb-3">
+                        <input type="text" id="phone" name="phone" placeholder="">
+                        <input type="button"  value="OUI" class=" nexttab btn btn-primary btn-lg form-control form-control-lg" onclick="onClick(), sym('vaccine','yes'),ok()" />	
+                    </div>
+                    <div class="input-group mb-3">
+                    <input type="button"  value="NO" class="nexttab btn btn-primary btn-lg form-control form-control-lg" onclick="noClick(), sym('vaccine','no'),ok()" />	
+                    </div>
+                </div>
+            </div>
+        </div>
+        <input type="button" value="&laquo Prev" class="prevtab btn btn-primary invisible" /> 
+        <input type="button" value="Next &raquo" class="nexttab btn btn-danger invisible" />
+    </div>
+    <!--diagnosis answer card-->
+    <div class="tab-pane" id="diagnosis" role="tabpanel" aria-labelledby="diagnosis-tab">
+        <div class="d-flex justify-content-center m-3">
+            <div class=" card shadow shadow-sm">
+                <div class="card-body">
+                    <img src="img/answer.png" class=" d-block mx-auto img-fluid"/><hr style="border-top:4px solid #000000; margin-bottom:0px;" />
+                    <h5 class="mb-1  text-left">RÉSULTAT:</h5>
+                        <h6 class="mb-1  text-left">Votre risque de <br />contacter COVID-19 est</h6>
+                            <h2 id="holder"></h2>
+                                <p id="resulthold" class="  font-weight-bold" style="color:#000000;"></p>
+                    <br>
+                    <div id="map"  style="height: 400px">
+                    </div>
+                    <br>
+                    <div class="input-group mb-3">
+                        <input type="button" value="" class="nexttab invisible" />
+                        <input type="button"   value="REDÉMARRER LE TEST" class=" btn btn-primary btn-lg form-control form-control-lg" onclick="location.reload();"/>
+                        </div>
+                        </div>
+                        </div>
+            </div>
+        </div>
+        <input type="button" value="&laquo Prev" class="prevtab btn btn-primary invisible" /> 
+        <input type="button" value="Next &raquo" class="nexttab btn btn-danger invisible " />
+    </div>
+</div>
+
+<!--Modal-->
+<div class="modal fade show " id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-modal="true"  aria-hidden= "true"  style="padding-right: 16px; display: none;">
+    <div class="modal-dialog modal-dialog-centered modal-sm" role="document">
+        <div class="modal-content">
+        <div class="modal-header" style="border-bottom:3px solid #007bff">
+            <img src="img/logo.png" class="img-fluid " alt="" height="60">
+            <h5 class="modal-title" id="myModalLabel">COVID-19 SELF TEST</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>    
+        </div>
+        <div class="modal-body">
+            <b>Il s'agit d'un outil d'auto-évaluation COVID-19 qui a été calibré sur la base des directives de l'OMS. Ce n'est pas un outil de diagnostic.</b>
+        <!--form language load -->
+            <div class="form-group">
+            <label for="lang" class="text-muted font-weight-bold">Select Language:</label>
+                <select name="lang" onchange="gotoPage(this)" id="lang" class="form-control">
+                    <option value="/index.html">English</option>
+                    <option selected="selected" value="fr.html">Français</option>
+                    <option value="/es.html">Spanish</option>
+                    <option value="/ar.html">عربي</option>
+                    
+                </select>
+            </div>
+        </div>
+        <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-dismiss="modal">Procéder >></button>
+        </div>
+        </div> 
+    </div>
+</div> 
+
+<script type="text/javascript" src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
+
+<!--onload modal-->
+<script type="text/javascript">
+    var sw = {
+  /* [INIT] */
+    etime : null, // holds HTML time display
+    erst : null, // holds HTML reset button
+    ego : null, // holds HTML start/stop button
+    timer : null, // timer object
+    now : 0, // current timer
+    init : function () {
+    // Get HTML elements
+        sw.etime = document.getElementById("sw-time");
+        sw.erst = document.getElementById("sw-rst");
+        sw.ego = document.getElementById("sw-go");
+    // Attach listeners
+        sw.erst.addEventListener("click", sw.reset);
+        sw.erst.disabled = false;
+        sw.ego.addEventListener("click", sw.start);
+        sw.ego.disabled = false;
+    },
+  /* [ACTIONS] */
+    tick : function () {
+    // tick() : update display if stopwatch running
+    // Calculate hours, mins, seconds
+        sw.now++;
+        var remain = sw.now;
+        var hours = Math.floor(remain / 3600);
+        remain -= hours * 3600;
+        var mins = Math.floor(remain / 60);
+        remain -= mins * 60;
+        var secs = remain;
+    // Update the display timer
+        if (hours<10) { hours = "0" + hours; }
+        if (mins<10) { mins = "0" + mins; }
+        if (secs<10) { secs = "0" + secs; }
+        sw.etime.innerHTML = hours + ":" + mins + ":" + secs;
+    },
+    start : function () {
+  // start() : start the stopwatch
+        sw.timer = setInterval(sw.tick, 1000);
+        sw.ego.value = "Stop";
+        sw.ego.removeEventListener("click", sw.start);
+        sw.ego.addEventListener("click", sw.stop);
+    },
+    stop  : function () {
+  // stop() : stop the stopwatch
+    clearInterval(sw.timer);
+    sw.timer = null;
+    sw.ego.value = "Start";
+    sw.ego.removeEventListener("click", sw.stop);
+    sw.ego.addEventListener("click", sw.start);
+    },
+    reset : function () {
+  // reset() : reset the stopwatch
+    // Stop if running
+    if (sw.timer != null) { sw.stop(); }
+    // Reset time
+    sw.now = -1;
+    sw.tick();
+    }
+};
+
+    window.addEventListener("load", sw.init);
+    $(document).ready(function() {
+        $("#myModal").modal('show');
+    });
+    function gotoPage(select){
+    window.location = select.value;
+    }
+    function language() {
+        $("#myModal").modal("show");
+    }
+
+</script>
+
+<script type="text/javascript">
+    onclick  
+
+/* --bootstrapTabControl-- */
+function bootstrapTabControl() {
+                var i, items = $('.nav-link'), pane = $('.tab-pane');
+                // next
+                $('.nexttab').on('click', function () {
+                    for (i = 0; i < items.length; i++) {
+                        if ($(items[i]).hasClass('active') == true) {
+                            break;
+                        }
+                    }
+                    if (i < items.length - 1) {
+                        // for tab
+                        $(items[i]).removeClass('active');
+                        $(items[i + 1]).addClass('active');
+                        // for pane
+                        $(pane[i]).removeClass('show active');
+                        $(pane[i + 1]).addClass('show active');
+                    }
+
+                });
+                // Prev
+                $('.prevtab').on('click', function () {
+                    for (i = 0; i < items.length; i++) {
+                        if ($(items[i]).hasClass('active') == true) {
+                            break;
+                        }
+                    }
+                    if (i != 0) {
+                        // for tab
+                        $(items[i]).removeClass('active');
+                        $(items[i - 1]).addClass('active');
+                        // for pane
+                        $(pane[i]).removeClass('show active');
+                        $(pane[i - 1]).addClass('show active');
+                    }
+                });
+            }
+            bootstrapTabControl();
+
+            var clicks = 0;
+            
+            function onClick() {
+                clicks += 1;
+                document.getElementById("clicks").innerHTML = clicks;
+                switch (clicks) {
+                    case 0:
+                    case 1:
+                    case 2:
+                        document.getElementById("holder").innerHTML = 'LE MINIMUM.';
+                        document.getElementById("holder").style.color = '#90ee90';
+                        document.getElementById("resulthold").innerHTML = 'Vous pouvez être stressé, reposez-vous.';
+                        // code block
+                        break;
+                    case 3:
+                    case 4:
+                    case 5:
+                        document.getElementById("holder").innerHTML = 'MODÉRÉ.';
+                        document.getElementById("holder").style.color = '#ffbf00';
+                        document.getElementById("resulthold").innerHTML = 'Faites attention à votre santé et refaites le test après deux jours..';
+                        // code block
+                        break;
+                    case 6:
+                    case 7:
+                    case 8:
+                    case 9:
+                    case 10:
+                    case 11:
+                    case 12:
+                        document.getElementById("holder").innerHTML = 'HAUT.';
+                        document.getElementById("holder").style.color = '#ff5500';
+                        document.getElementById("resulthold").innerHTML = 'Veuillez consulter immédiatement un médecin. Ne paniquez pas, <br /> isolez-vous de vos amis et de votre famille.';
+
+                        // code block
+                        break;
+                    case 13:
+                    case 14:
+                    case 15:
+                    case 16:
+                    case 17:
+                    case 18:
+                    case 19:
+                    case 20:
+                    case 21:
+                    case 22:
+                    case 23:
+                        document.getElementById("holder").innerHTML = 'TRÈS HAUT';
+                        document.getElementById("holder").style.color = '#FF0000';
+                        document.getElementById("resulthold").innerHTML = 'Ne paniquez pas, isolez-vous de vos amis et de votre famille. <br /> Appelez le Center For Disease Control de votre pays.';
+
+                        // code block
+                        break;
+                    default:
+                        // code block
+                        document.getElementById("holder").innerHTML = 'HELLO.';
+                }
+            
+            };
+            function onClickdouble() {
+                clicks += 2;
+                document.getElementById("clicks").innerHTML = clicks;
+                switch (clicks) {
+                    case 0:
+                    case 1:
+                    case 2:
+                        document.getElementById("holder").innerHTML = 'LE MINIMUM.';
+                        document.getElementById("holder").style.color = '#90ee90';
+                        document.getElementById("resulthold").innerHTML = 'Vous pouvez être stressé, reposez-vous.';
+                        // code block
+                        break;
+                    case 3:
+                    case 4:
+                    case 5:
+                        document.getElementById("holder").innerHTML = 'MODÉRÉ.';
+                        document.getElementById("holder").style.color = '#ffbf00';
+                        document.getElementById("resulthold").innerHTML = 'Faites attention à votre santé et refaites le test après deux jours.';
+                        // code block
+                        break;
+                    case 6:
+                    case 7:
+                    case 8:
+                    case 9:
+                    case 10:
+                    case 11:
+                    case 12:
+                        document.getElementById("holder").innerHTML = 'HAUT.';
+                        document.getElementById("holder").style.color = '#ff5500';
+                        document.getElementById("resulthold").innerHTML = 'Veuillez consulter immédiatement un médecin. Ne paniquez pas, <br /> isolez-vous de vos amis et de votre famille.';
+
+                        // code block
+                        break;
+                    case 13:
+                    case 14:
+                    case 15:
+                    case 16:
+                    case 17:
+                    case 18:
+                    case 19:
+                    case 20:
+                    case 21:
+                    case 22:
+                    case 23:
+                        document.getElementById("holder").innerHTML = 'TRÈS HAUT';
+                        document.getElementById("holder").style.color = '#FF0000';
+                        document.getElementById("resulthold").innerHTML = 'Ne paniquez pas, isolez-vous de vos amis et de votre famille. <br /> Appelez le Center For Disease Control de votre pays.';
+                        // code block
+                        break;
+                    default:
+                        // code block
+                        document.getElementById("holder").innerHTML = 'HELLO.';
+                }
+            };
+            function onClicktriple() {
+                clicks += 3;
+                document.getElementById("clicks").innerHTML = clicks;
+                switch (clicks) {
+                    case 0:
+                    case 1:
+                    case 2:
+                        document.getElementById("holder").innerHTML = 'LE MINIMUM.';
+                        document.getElementById("holder").style.color = '#90ee90';
+                        document.getElementById("resulthold").innerHTML = 'Vous pouvez être stressé, reposez-vous.';
+                        // code block
+                        break;
+                    case 3:
+                    case 4:
+                    case 5:
+                        document.getElementById("holder").innerHTML = 'MODÉRÉ.';
+                        document.getElementById("holder").style.color = '#ffbf00';
+                        document.getElementById("resulthold").innerHTML = 'Faites attention à votre santé et refaites le test après deux jours.';
+                        // code block
+                        break;
+                    case 6:
+                    case 7:
+                    case 8:
+                    case 9:
+                    case 10:
+                    case 11:
+                    case 12:
+                        document.getElementById("holder").innerHTML = 'HAUT.';
+                        document.getElementById("holder").style.color = '#ff5500';
+                        document.getElementById("resulthold").innerHTML = 'Veuillez consulter immédiatement un médecin. Ne paniquez pas, <br /> isolez-vous de vos amis et de votre famille.';
+                        // code block
+                        break;
+                    case 13:
+                    case 14:
+                    case 15:
+                    case 16:
+                    case 17:
+                    case 18:
+                    case 19:
+                    case 20:
+                    case 21:
+                    case 22:
+                    case 23:
+                    document.getElementById("holder").innerHTML = 'TRÈS HAUT.';
+                        document.getElementById("holder").style.color = '#FF0000';
+                        document.getElementById("resulthold").innerHTML = 'Ne paniquez pas, isolez-vous de vos amis et de votre famille. <br /> Appelez le Center For Disease Control de votre pays.';
+                        // code block
+                        break;
+                    default:
+                        // code block
+                        document.getElementById("holder").innerHTML = 'HELLO.';
+                }
+            };
+            function noClick() {
+                clicks += 0;
+                document.getElementById("clicks").innerHTML = clicks;
+                switch (clicks) {
+                    case 0:
+                    case 1:
+                    case 2:
+                        document.getElementById("holder").innerHTML = 'LE MINIMUM.';
+                        document.getElementById("holder").style.color = '#90ee90';
+                        document.getElementById("resulthold").innerHTML = 'Vous pouvez être stressé, reposez-vous.';
+                        // code block
+                        break;
+                    case 3:
+                    case 4:
+                    case 5:
+                        document.getElementById("holder").innerHTML = 'MODÉRÉ.';
+                        document.getElementById("holder").style.color = '#ffbf00';
+                        document.getElementById("resulthold").innerHTML = 'Faites attention à votre santé et refaites le test après deux jours.';
+                        // code block
+                        break;
+                    case 6:
+                    case 7:
+                    case 8:
+                    case 9:
+                    case 10:
+                    case 11:
+                    case 12:
+                        document.getElementById("holder").innerHTML = 'HAUT.';
+                        document.getElementById("holder").style.color = '#ff5500';
+                        document.getElementById("resulthold").innerHTML = 'Veuillez consulter immédiatement un médecin. Ne paniquez pas, <br /> isolez-vous de vos amis et de votre famille.';
+                        // code block
+                        break;
+                    case 13:
+                    case 14:
+                    case 15:
+                    case 16:
+                    case 17:
+                    case 18:
+                    case 19:
+                    case 20:
+                    case 21:
+                    case 22:
+                    case 23:
+                        document.getElementById("holder").innerHTML = 'TRÈS HAUT.';
+                        document.getElementById("holder").style.color = '#FF0000';
+                        document.getElementById("resulthold").innerHTML = 'Ne paniquez pas, isolez-vous de vos amis et de votre famille. <br /> Appelez le Center For Disease Control de votre pays.';
+                        // code block
+                        break;
+                    default:
+                        // code block
+                        document.getElementById("holder").innerHTML = 'HELLO.';
+                }
+            }
+        </script>
+    <script type="module" src="/map.js"></script>  
+
+</form>
+<!-- Firebase App (the core Firebase SDK) is always required and must be listed first -->
+<script src="https://www.gstatic.com/firebasejs/8.2.9/firebase-app.js"></script>
+
+<!-- Add Firebase products that you want to use -->
+<script src="https://www.gstatic.com/firebasejs/8.2.9/firebase-firestore.js"></script>
+
+<script src="/app.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/main.js"></script>
+  </body>
+</html>

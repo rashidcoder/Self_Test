@@ -1,0 +1,25 @@
+    {
+        "name": "COVID-19 SELF TEST",
+        "short_name": "Self Test",
+        "lang": "en-US", 
+        "start_url": "./index.html",
+        "scope": "/",
+        "icons": [
+        {
+            "src": "img/logo144.png",
+            "sizes": "144x144",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "img/logo512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+      
+        ],
+        "theme_color": "black",
+        "background_color": "white",
+        "display": "standalone"
+    }
