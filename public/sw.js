@@ -14,7 +14,7 @@ var STATIC_FILES = [
   "https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css",
   "https://unpkg.com/leaflet@1.7.1/dist/leaflet.js",
   "https://unpkg.com/leaflet@1.7.1/dist/leaflet.css",
-  "http://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js",
+  "https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js",
   
 ];
 

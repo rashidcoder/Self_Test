@@ -2,8 +2,10 @@ const express = require("express");
 const app = express();
 const server = require("http").createServer(app);
 const io = require("socket.io")(server);
-const port = process.env.PORT || 3000;
+const cors = require("cors"); 
 
+const port = process.env.PORT || 80;
+app.use(cors({ origin: true }));
 app.use(express.static(__dirname + "/public"));
 
 io.on("connection", socket => {
